@@ -33,6 +33,7 @@ import {
 } from "@/lib/proof";
 import { Button } from "./ui/button";
 import { WalletButton } from "./providers";
+import { DemoFlow } from "./demo-flow";
 export type SavedProof = Proof & { filename: string };
 export const HISTORY = "proofly:devnet:history:v1";
 export function saveProof(proof: SavedProof) {
@@ -257,7 +258,28 @@ const schema = z.object({
     .refine(validateSignature, "Enter a valid Solana transaction signature."),
   expectedSigner: z.string().trim().optional(),
 });
-export function DocumentFlow({
+export function DocumentFlow(props: {
+  mode: "register" | "verify" | "proof";
+  initialSignature?: string;
+}) {
+  const [demo, setDemo] = useState(false);
+  return (
+    <>
+      {props.mode !== "proof" && (
+        <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <input type="checkbox" checked={demo} onChange={(e) => setDemo(e.target.checked)} />
+            {demo ? "Demo — simulated data" : "Enable demo mode (simulated data)"}
+          </label>
+          {demo && <p>Local demonstration only. No Solana transaction, Phantom approval, or real on-chain verification.</p>}
+        </div>
+      )}
+      {demo && props.mode !== "proof" ? <DemoFlow mode={props.mode} /> : <LiveDocumentFlow {...props} />}
+    </>
+  );
+}
+
+function LiveDocumentFlow({
   mode,
   initialSignature,
 }: {
